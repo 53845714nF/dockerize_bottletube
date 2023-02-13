@@ -1,0 +1,82 @@
+version: '3.9'
+services:
+
+  traefik:
+      image: traefik:latest
+      restart: always
+      command:
+        - '--api.insecure=true'
+        - '--providers.docker=true'
+        - '--providers.docker.exposedbydefault=false'
+        - '--entrypoints.web.address=:80'
+      ports:
+        - '80:80'
+        - '8080:8080'
+      volumes:
+        - '/var/run/docker.sock:/var/run/docker.sock:ro'
+
+  bottletube:
+    image: bottletube:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      - 'traefik'
+      - 'database'
+      - 'objectstorage'
+    ports:
+      - '8000:80'
+    environment:
+      HOSTNAME: ${HOSTNAME}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      STORAGE_URL_IN: ${STORAGE_URL_IN}
+      STORAGE_URL_OUT: ${STORAGE_URL_OUT}
+      BUCKET: ${BUCKET}
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.bottletube.rule=Host(`bottletube.localhost`)'
+      - 'traefik.http.routers.bottletube.entrypoints=web'
+      - 'traefik.http.services.bottletube.loadbalancer.healthcheck.path=/healthcheck'
+      - 'traefik.http.services.bottletube.loadbalancer.healthcheck.interval=100ms'
+      - 'traefik.http.services.bottletube.loadbalancer.healthcheck.timeout=75ms'
+      - 'traefik.http.services.bottletube.loadbalancer.healthcheck.scheme=http'
+
+  database:
+    image: postgres:latest
+    restart: always
+    volumes:
+      - 'db_data:/var/lib/postgresql/data'
+      - './sql/setup.sql:/docker-entrypoint-initdb.d/setup.sql'
+    environment: 
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - '5432:5432'
+
+  objectstorage:
+    image: bitnami/minio:latest
+    depends_on:
+      - 'traefik'
+    restart: always
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - 'minio_data:/data'
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_DEFAULT_BUCKETS: ${MINIO_DEFAULT_BUCKETS}
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.object_storage.rule=Host(`minio.localhost`)'
+      - 'traefik.http.routers.object_storage.entrypoints=web'
+
+volumes:
+  db_data:
+  minio_data:
