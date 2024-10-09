@@ -1,0 +1,37 @@
+name: Build Bottletube
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build:
+    name: Build Images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Buildah Action
+      id: build_image
+      uses: redhat-actions/buildah-build@v2
+      with:
+        image: ghcr.io/${{ github.repository }}/bottletube
+        oci: true
+        context: ./
+        containerfiles: |
+          ./Containerfile
+
+    - name: Push Image to GitHub Container Registry
+      uses: redhat-actions/push-to-registry@v2
+      with:
+        image: ${{ steps.build_image.outputs.image }}
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
