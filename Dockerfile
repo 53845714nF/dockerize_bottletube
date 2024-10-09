@@ -1,7 +1,7 @@
 FROM ubuntu:latest
 
 RUN apt update
-RUN apt -y install apache2 libapache2-mod-wsgi-py3 python3 python3-pip libpq-dev postgresql-client postgresql-client-common && apt-get clean python3.12-venv
+RUN apt -y install apache2 libapache2-mod-wsgi-py3 python3 python3-pip libpq-dev postgresql-client postgresql-client-common python3.12-venv && apt-get clean 
 
 WORKDIR /app
 COPY /src/ /app/
