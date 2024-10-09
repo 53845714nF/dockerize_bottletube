@@ -26,7 +26,7 @@ jobs:
         oci: true
         context: ./
         containerfiles: |
-          ./Containerfile
+          ./Dockerfile
 
     - name: Push Image to GitHub Container Registry
       uses: redhat-actions/push-to-registry@v2
