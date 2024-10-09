@@ -7,6 +7,8 @@ WORKDIR /app
 COPY /src/ /app/
 
 #Install python libs
+RUN python3 -m venv venv
+RUN source .venv/bin/activate 
 RUN pip install -r requirements.txt
 
 # Setup Apache 
