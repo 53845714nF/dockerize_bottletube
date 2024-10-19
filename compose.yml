@@ -1,6 +1,4 @@
-version: '3.9'
 services:
-
   traefik:
       image: traefik:latest
       restart: always
@@ -19,14 +17,14 @@ services:
     image: bottletube:latest
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Containerfile
     restart: always
     depends_on:
       - 'traefik'
       - 'database'
       - 'objectstorage'
     ports:
-      - '8000:80'
+      - '10000:10000'
     environment:
       HOSTNAME: ${HOSTNAME}
       POSTGRES_USER: ${POSTGRES_USER}
