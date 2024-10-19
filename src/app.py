@@ -134,4 +134,4 @@ connection.commit()
 resource = Minio(STORAGE_URL_IN,secure=False)
 
 chdir(path.dirname(__file__))
-application = default_app()
+app = default_app()

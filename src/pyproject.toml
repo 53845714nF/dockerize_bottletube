@@ -1,0 +1,12 @@
+[project]
+name = "bottletube"
+version = "0.1.0"
+description = "Bottletube is a service that allows you to manage images in a web application."
+readme = "Readme.md"
+requires-python = ">=3.11"
+dependencies = [
+    "bottle==0.13.2",
+    "gunicorn==23.0.0",
+    "minio==7.2.9",
+    "psycopg2-binary==2.9.10",
+]
